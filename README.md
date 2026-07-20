@@ -1,58 +1,152 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🎫 PoC Helpdesk API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+API REST desenvolvida em **Laravel** para gerenciamento de tickets de suporte com funcionalidade de rascunhos de respostas gerados por IA.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 📌 Sobre o Projeto
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Esta PoC (Proof of Concept) tem como objetivo validar o backend de um ecossistema de Helpdesk Inteligente. O sistema permite a abertura de chamados por clientes, consulta de tickets e a injeção/atualização de rascunhos de respostas via inteligência artificial para auxiliar a equipe de suporte.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## 🛠️ Tecnologias Utilizadas
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- **Framework:** Laravel 11+
+- **Linguagem:** PHP 8.3+
+- **Banco de Dados:** PostgreSQL
+- **Ambiente de Dev:** Docker (Laravel Sail)
+- **Testes & Querys:** Postman / DBeaver
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+## 🚀 Como Rodar o Projeto
 
-## Agentic Development
+### 1. Pré-requisitos
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+Certifique-se de ter o Docker e o Git instalados no seu ambiente.
+
+### 2. Passo a Passo
 
 ```bash
-composer require laravel/boost --dev
+# Clone o repositório
+git clone [https://github.com/kennyssparda/poc-helpdesk-api.git](https://github.com/kennyssparda/poc-helpdesk-api.git)
+cd poc-helpdesk-api
 
-php artisan boost:install
+# Copie o arquivo de ambiente
+cp .env.example .env
+
+# Suba o ambiente Docker via Sail
+./vendor/bin/sail up -d
+
+# Instale as dependências (caso precise)
+./vendor/bin/sail composer install
+
+# Execute as migrations do banco de dados no PostgreSQL
+./vendor/bin/sail artisan migrate
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Para encerrar os containers ao terminar o trabalho:
 
-## Contributing
+```bash
+./vendor/bin/sail down
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+---
 
-## Code of Conduct
+## 🔌 Endpoints da API
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+A base das rotas da API responde em `/api/tickets`.
 
-## Security Vulnerabilities
+| Método | Endpoint            | Descrição                                      |
+| :----- | :------------------ | :--------------------------------------------- |
+| `GET`  | `/api/tickets`      | Lista todos os tickets cadastrados             |
+| `POST` | `/api/tickets`      | Cria um novo ticket de suporte                 |
+| `GET`  | `/api/tickets/{id}` | Exibe os detalhes de um ticket específico      |
+| `PUT`  | `/api/tickets/{id}` | Atualiza o status e/ou insere o rascunho de IA |
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
 
-## License
+### 📝 Exemplos de Requisição
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+#### 1. Criar Ticket (`POST /api/tickets`)
+
+**Body (JSON):**
+
+```json
+{
+    "titulo": "Falha na sincronização de anúncios",
+    "descricao_cliente": "Os veículos não estão subindo para a Webmotors.",
+    "status": "aberto"
+}
+```
+
+**Resposta (`201 Created`):**
+
+```json
+{
+    "id": 1,
+    "titulo": "Falha na sincronização de anúncios",
+    "descricao_cliente": "Os veículos não estão subindo para a Webmotors.",
+    "status": "aberto",
+    "rascunho_ia": null,
+    "created_at": "2026-07-20T15:49:48.000000Z",
+    "updated_at": "2026-07-20T15:49:48.000000Z"
+}
+```
+
+---
+
+#### 2. Atualizar Status / Rascunho de IA (`PUT /api/tickets/1`)
+
+**Body (JSON):**
+
+```json
+{
+    "titulo": "Falha na sincronização de anúncios",
+    "descricao_cliente": "Os veículos não estão subindo para a Webmotors.",
+    "status": "em_atendimento",
+    "rascunho_ia": "Cliente está informando que o portal Webmotors não está recebendo os estoques..."
+}
+```
+
+**Resposta (`200 OK`):**
+
+```json
+{
+    "id": 1,
+    "titulo": "Falha na sincronização de anúncios",
+    "descricao_cliente": "Os veículos não estão subindo para a Webmotors.",
+    "status": "em_atendimento",
+    "rascunho_ia": "Cliente está informando que o portal Webmotors não está recebendo os estoques...",
+    "created_at": "2026-07-20T15:49:48.000000Z",
+    "updated_at": "2026-07-20T16:01:07.000000Z"
+}
+```
+
+---
+
+## 📜 Histórico de Setup & Comandos
+
+Comandos utilizados durante a estruturação inicial da aplicação:
+
+```bash
+# Habilitação das rotas de API e Sanctum
+./vendor/bin/sail artisan install:api
+
+# Criação da Migration, Model e Factory do Ticket
+./vendor/bin/sail artisan make:model Ticket -m -f
+
+# Criação do Controller REST com métodos de API
+./vendor/bin/sail artisan make:controller Api/TicketController --model=Ticket --api
+
+# Execução das migrations
+./vendor/bin/sail artisan migrate
+```
+
+---
+
+## 🎯 Próximos Passos (Backlog)
+
+- [ ] Criar Service de Integração com API de LLM (Gemini API)
+- [ ] Implementar processamento assíncrono de rascunhos via **Laravel Queues / Jobs**
