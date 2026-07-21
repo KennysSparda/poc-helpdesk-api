@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Ticket;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class TicketController extends Controller
 {
@@ -13,7 +15,7 @@ class TicketController extends Controller
      */
     public function index()
     {
-        return response()->json(Ticket::all());
+        return response()->json(Ticket::orderBy('created_at', 'desc')->get());
     }
 
     /**
@@ -28,7 +30,21 @@ class TicketController extends Controller
             'rascunho_ia' => 'nullable|string',
         ]);
 
+        // Garante o status inicial padrão se não vier preenchido
+        $validated['status'] = $validated['status'] ?? 'aberto';
+
         $ticket = Ticket::create($validated);
+
+        // Dispara o webhook para o n8n na máquina da RTX de forma assíncrona
+        try {
+            Http::timeout(3)->post('http://192.168.193.2:5678/webhook/gerar-rascunho', [
+                'id' => $ticket->id,
+                'titulo' => $ticket->titulo,
+                'descricao_cliente' => $ticket->descricao_cliente,
+            ]);
+        } catch (\Exception $e) {
+            Log::warning('Não foi possível notificar o n8n: ' . $e->getMessage());
+        }
 
         return response()->json($ticket, 201);
     }
@@ -55,7 +71,10 @@ class TicketController extends Controller
 
         $ticket->update($validated);
 
-        return response()->json($ticket);
+        return response()->json([
+            'message' => 'Chamado atualizado com sucesso',
+            'ticket' => $ticket
+        ]);
     }
 
     /**
