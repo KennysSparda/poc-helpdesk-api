@@ -20,5 +20,7 @@ class Ticket extends Model
         'descricao_cliente',
         'status',
         'rascunho_ia',
+        'resposta_final',
+        'respondido_em'
     ];
 }
