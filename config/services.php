@@ -34,5 +34,8 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
-
+    'n8n' => [
+        'uri' => env('API_IA_URI', 'http://localhost'),
+        'port' => env('APP_IA_PORT', '5678'),
+    ],
 ];
