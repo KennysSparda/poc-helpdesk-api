@@ -17,8 +17,13 @@ class RascunhoIaService
      */
     public function solicitarRascunho(Ticket $ticket): void
     {
+        $baseUrl = config('services.n8n.uri');
+        $port = config('services.n8n.port');
+        
+        $url = "{$baseUrl}:{$port}/webhook/gerar-rascunho";
+        
         try {
-            Http::timeout(3)->post('http://192.168.193.2:5678/webhook/gerar-rascunho', [
+            Http::timeout(3)->post($url, [
                 'id' => $ticket->id,
                 'titulo' => $ticket->titulo,
                 'descricao_cliente' => $ticket->descricao_cliente,
